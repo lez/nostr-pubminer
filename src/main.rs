@@ -11,8 +11,17 @@ fn run_thread(sender: Sender<KeyPair>) {
     }
 }
 
-fn filter_pubkeys(pubkey: String, filter: &str) -> bool {
+fn filter_pubkeys(pubkey: &str, filter: &str) -> bool {
     pubkey.starts_with(filter)
+}
+
+fn to_npub(pubkey: &XOnlyPublicKey) -> String {
+    //Shamefully stolen from https://github.com/grunch/rana/blob/main/src/main.rs in order to add bech32 support
+    bech32::encode(
+        "npub",
+        hex::decode(pubkey.to_string()).unwrap().to_base32(),
+        Variant::Bech32,
+    ).unwrap()
 }
 
 fn main() {
@@ -61,33 +70,30 @@ fn main() {
         }
     }
     //Get the results and write them
-    let mut result_amount = 0;
     loop {
         let new_result = receiver.recv();
         match new_result {
             Ok(result) => {
                 let (pubkey_readable, _) = XOnlyPublicKey::from_keypair(&result);
+                let mut bech_key: Option<String> = None;
                 if !bech32 {
-                    if !filter_pubkeys(pubkey_readable.to_string(), filter_string.as_str()) {
+                    if !filter_pubkeys(&pubkey_readable.to_string(), filter_string.as_str()) {
                         continue;
                     }
                 }
                 else {
                     //Convert to bech32
-                    let bech_key: String = bech32::encode( //Shamefully stolen from https://github.com/grunch/rana/blob/main/src/main.rs in order to add bech32 support
-                        "npub",
-                        hex::decode(pubkey_readable.to_string()).unwrap().to_base32(),
-                        Variant::Bech32,
-                    ).unwrap();
+                    let encoded_key = to_npub(&pubkey_readable);
                     let new_filter_string = format!("npub1{}", filter_string);
-                    if !filter_pubkeys(bech_key, new_filter_string.as_str()) {
+                    if !filter_pubkeys(&encoded_key, new_filter_string.as_str()) {
                         continue;
                     }
+                    bech_key = Some(encoded_key);
                 }
-                
-                let tmp_output = format!("{};{}\n", result.display_secret(), pubkey_readable);
-                result_amount += 1;
-                println!("{} calculated keys...", result_amount);
+                let bech_key = bech_key.unwrap_or_else(|| to_npub(&pubkey_readable));
+
+                let tmp_output = format!("{};{};{}\n", bech_key, result.display_secret(), pubkey_readable);
+                println!("{}", bech_key);
                 output_file.write_all(tmp_output.as_bytes()).unwrap();
             },
             Err(_) => {
@@ -126,20 +132,16 @@ fn run_benchmark(amount_of_tries: u128, bech32: bool) {
                 Ok(result) => {
                     let (pubkey_readable, _) = XOnlyPublicKey::from_keypair(&result);
                     if !bech32 {
-                        if !filter_pubkeys(pubkey_readable.to_string(), filter_string.as_str()) {
+                        if !filter_pubkeys(&pubkey_readable.to_string(), filter_string.as_str()) {
                             total_filtering_time += start.elapsed().as_micros();
                             continue;
                         }
                     }
                     else {
                         //Convert to bech32
-                        let bech_key: String = bech32::encode( //Shamefully stolen from https://github.com/grunch/rana/blob/main/src/main.rs in order to add bech32 support
-                            "npub",
-                            hex::decode(pubkey_readable.to_string()).unwrap().to_base32(),
-                            Variant::Bech32,
-                        ).unwrap();
+                        let bech_key = to_npub(&pubkey_readable);
                         let new_filter_string = format!("npub1{}", filter_string);
-                        if !filter_pubkeys(bech_key, new_filter_string.as_str()) {
+                        if !filter_pubkeys(&bech_key, new_filter_string.as_str()) {
                             total_filtering_time += start.elapsed().as_micros();
                             continue;
                         }
