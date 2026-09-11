@@ -19,28 +19,28 @@ The executable will be in the newly created `target/release` directory.
 
 Every generated keypair will be stored in a `output.csv` file in the directory the tool is launched from.
 
+Generating vanity keypairs with the bech32 pubkey beginning with `npub1dead8eef` using 11 threads (bech32 is the default mode) :
+
+```
+./vanitypubkey dead8eef 11
+```
+
 Generating vanity keypairs with the hex pubkey beginning with `deadbeef` using 11 threads :
 
 ```
-./vanitypubkey deadbeef 11
-```
-
-Generating vanity keypairs with the bech32 pubkey beginning with `npub1dead8eef` using 11 threads :
-
-```
-./vanitypubkey dead8eef 11 yes
-```
-
-Running a one-core benchmark with 10000 iterations, testing generation and hex key filtering: 
-
-```
-./vanitypubkey benchmark 10000
+./vanitypubkey deadbeef 11 hex
 ```
 
 Running a one-core benchmark with 10000 iterations, testing generation and bech32 key filtering: 
 
 ```
-./vanitypubkey benchmark 10000 yes
+./vanitypubkey benchmark 10000
+```
+
+Running a one-core benchmark with 10000 iterations, testing generation and hex key filtering: 
+
+```
+./vanitypubkey benchmark 10000 hex
 ```
 
 ## Architecture

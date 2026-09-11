@@ -26,15 +26,20 @@ fn to_npub(pubkey: &XOnlyPublicKey) -> String {
 
 fn main() {
     if env::args().len() < 3 {
-        println!("Usage: {} <filter> <threadAmount> <optional:bech32->yes>", env::args().nth(0).unwrap());
+        println!("Usage: {} <filter> <threadAmount> <optional:hex>", env::args().nth(0).unwrap());
         println!("\t Benchmark with \"benchmark\" as filter and threadAmount as the amount of iterations");
         return;
     }
     let filter_string = env::args().nth(1).unwrap();
     let thread_amount = env::args().nth(2).unwrap().parse::<u32>().unwrap();
-    let mut bech32 = false;
+    let mut bech32 = true;
     if env::args().len() == 4 {
-        bech32 = env::args().nth(3).unwrap() == "yes";
+        let mode = env::args().nth(3).unwrap();
+        if mode != "hex" {
+            eprintln!("Invalid third parameter: '{}'. Expected 'hex' to disable bech32 mode.", mode);
+            std::process::exit(1);
+        }
+        bech32 = false;
     }
 
     if filter_string == "benchmark" {
