@@ -42,6 +42,14 @@ fn main() {
         return;
     }
 
+    if bech32 {
+        const BECH32_CHARSET: &str = "023456789acdefghjklmnpqrstuvwxyz";
+        if let Some(invalid_char) = filter_string.chars().find(|c| !BECH32_CHARSET.contains(*c)) {
+            eprintln!("Invalid bech32 character in filter: '{}'. Allowed characters: {}", invalid_char, BECH32_CHARSET);
+            std::process::exit(1);
+        }
+    }
+
     println!("Thread amount: {}", thread_amount);
     let (sender, receiver) = channel();
     let mut senders: Vec<Sender<KeyPair>> = Vec::new();
