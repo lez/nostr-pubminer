@@ -54,6 +54,13 @@ fn main() {
             std::process::exit(1);
         }
     }
+    else {
+        const HEX_CHARSET: &str = "0123456789abcdef";
+        if let Some(invalid_char) = filter_string.chars().find(|c| !HEX_CHARSET.contains(*c)) {
+            eprintln!("Invalid hex character in filter: '{}'. Allowed characters: {}", invalid_char, HEX_CHARSET);
+            std::process::exit(1);
+        }
+    }
 
     println!("Thread amount: {}", thread_amount);
     let (sender, receiver) = channel();
