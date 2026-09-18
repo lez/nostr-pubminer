@@ -62,7 +62,7 @@ fn main() {
         }
     }
 
-    println!("Thread amount: {}", thread_amount);
+    println!("Starting {} threads. See output.txt for secrets.", thread_amount);
     let (sender, receiver) = channel();
     let mut senders: Vec<Sender<KeyPair>> = Vec::new();
     for _ in 1..thread_amount {
@@ -72,8 +72,7 @@ fn main() {
     
     //Create the threads and run them
     let mut threads = Vec::new();
-    for i in 0..thread_amount {
-        println!("Starting thread {}", i);
+    for _i in 0..thread_amount {
         let new_sender = senders.pop().unwrap();
         threads.push(std::thread::spawn(move || {
             run_thread(new_sender);
