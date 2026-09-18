@@ -112,7 +112,11 @@ fn main() {
                 let bech_key = bech_key.unwrap_or_else(|| to_npub(&pubkey_readable));
 
                 let tmp_output = format!("{};{};{}\n", bech_key, result.display_secret(), pubkey_readable);
-                println!("{}", bech_key);
+                if bech32 {
+                    println!("{}", bech_key);
+                } else {
+                    println!("{}", pubkey_readable);
+                }
                 output_file.write_all(tmp_output.as_bytes()).unwrap();
             },
             Err(_) => {
